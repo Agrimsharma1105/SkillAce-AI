@@ -47,3 +47,18 @@ export async function getMe(){
         console.log(error)
     }
 }
+
+
+export async function saveApiKey(apiKey) {
+    try {
+        const response = await api.post(
+            "/api/auth/save-api-key",
+            { apiKey }
+        );
+
+        return response.data;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}

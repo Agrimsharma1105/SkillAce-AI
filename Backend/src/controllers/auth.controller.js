@@ -48,11 +48,12 @@ async function registerUserController(req,res){
 
    res.status(201).json({
     message:"User registered Successfully",
-    user:{
-        id:user._id,
-        username:user.username,
-        email:user.email
-    }
+   user: {
+    id: user._id,
+    username: user.username,
+    email: user.email,
+    hasApiKey: !!user.geminiApiKey
+}
    })
 }
 
@@ -94,11 +95,12 @@ async function loginUserController(req,res){
 
    res.status(201).json({
     message:"User LoggedIn Successfully",
-    user:{
-        id:user._id,
-        username:user.username,
-        email:user.email
-    }
+    user: {
+    id: user._id,
+    username: user.username,
+    email: user.email,
+    hasApiKey: !!user.geminiApiKey
+}
    })
 }
 
@@ -116,7 +118,7 @@ async function logoutUserController(req,res){
 
     res.clearCookie("token");
     res.status(200).json({
-        message:"User Logged Out successfully"
+        message:"User Logged Out successfully",
     })
 }
 
@@ -131,12 +133,35 @@ async function getMeController(req,res){
     const user = await userModel.findById(req.user.id)
  res.status(200).json({
     message:"User details fetched sucessfully",
-    user: {
-        id: user._id,
-        username: user.username,
-        email: user.email
-    }
+  user: {
+    id: user._id,
+    username: user.username,
+    email: user.email,
+    hasApiKey: !!user.geminiApiKey
+}
 })
 
 }
-module.exports={registerUserController,loginUserController,logoutUserController, getMeController}
+
+async function saveApiKeyController(req, res) {
+
+    const { apiKey } = req.body;
+
+    if (!apiKey) {
+        return res.status(400).json({
+            message: "API Key is required"
+        });
+    }
+
+    await userModel.findByIdAndUpdate(
+        req.user.id,
+        {
+            geminiApiKey: apiKey
+        }
+    );
+
+    return res.status(200).json({
+        message: "API Key saved successfully"
+    });
+}
+module.exports={registerUserController,loginUserController,logoutUserController, getMeController, saveApiKeyController}

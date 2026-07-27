@@ -2,6 +2,9 @@ import React, { useState, useRef } from 'react'
 import "../styles/home.scss"
 import { useInterview } from '../hooks/useInterview.js'
 import { useNavigate } from 'react-router'
+import { useEffect } from "react";
+import { Link } from "react-router";
+import { useAuth } from "../../auth/hooks/useAuth";
 import logo from "../../../assets/skillace-logo.png.png";
 //import { GitHub, Linkedin, Mail } from "lucide-react";
 import { FaGithub, FaLinkedin, FaEnvelope } from "react-icons/fa";
@@ -11,8 +14,14 @@ const Home = () => {
     const [ jobDescription, setJobDescription ] = useState("")
     const [ selfDescription, setSelfDescription ] = useState("")
     const resumeInputRef = useRef()
-
+    const { user } = useAuth();
     const navigate = useNavigate()
+
+    useEffect(() => {
+    if (user && !user.hasApiKey) {
+        navigate("/connect-api");
+    }
+}, [user, navigate]);
 
     const handleGenerateReport = async () => {
         const resumeFile = resumeInputRef.current.files[ 0 ]
@@ -175,11 +184,11 @@ const Home = () => {
 </section>
 
             {/* Page Footer */}
-            <footer className='page-footer'>
-                <a href='#'>Privacy Policy</a>
-                <a href='#'>Terms of Service</a>
-                <a href='#'>Help Center</a>
-            </footer>
+           <footer className='page-footer'>
+    <Link to="/privacy-policy">Privacy Policy</Link>
+    <Link to="/terms-of-service">Terms of Service</Link>
+    <Link to="/contact">Contact</Link>
+</footer>
         </div>
     )
 }

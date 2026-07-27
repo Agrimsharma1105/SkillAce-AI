@@ -1,12 +1,13 @@
 const { GoogleGenAI } = require("@google/genai");
 const {z} = require("zod");
 const {zodToJsonSchema} = require("zod-to-json-schema")
+const userModel = require("../models/user.model");
 const puppeteer = require("puppeteer")
 
 
-const ai = new GoogleGenAI({
-    apiKey:process.env.GOOGLE_GENAI_API_KEY
-})
+// const ai = new GoogleGenAI({
+//     apiKey:process.env.GOOGLE_GENAI_API_KEY
+// })
 
 
 const interviewReportSchema = z.object({
@@ -96,7 +97,21 @@ const interviewReportSchema = z.object({
 });
 
 
-async function generateInterviewReport({resume,selfDescription,jobDescription}){
+async function generateInterviewReport({
+    userId,
+    resume,
+    selfDescription,
+    jobDescription
+}){
+    const user = await userModel.findById(userId);
+
+    if (!user || !user.geminiApiKey) {
+        throw new Error("Gemini API Key not found");
+    }
+
+    const ai = new GoogleGenAI({
+        apiKey: user.geminiApiKey
+    });
   const prompt = `Generate an interview report for a candidate with the following details:
     Resume: ${resume}
     Self Description: ${selfDescription}
@@ -117,26 +132,48 @@ async function generateInterviewReport({resume,selfDescription,jobDescription}){
 
 
 async function generatePdfFromHtml(htmlContent) {
-    const browser = await puppeteer.launch()
+
+    const browser = await puppeteer.launch({
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
+        headless: true,
+        args: [
+            "--no-sandbox",
+            "--disable-setuid-sandbox"
+        ]
+    });
+
     const page = await browser.newPage();
-    await page.setContent(htmlContent, { waitUntil: "networkidle0" })
+
+    await page.setContent(htmlContent, {
+        waitUntil: "networkidle0"
+    });
 
     const pdfBuffer = await page.pdf({
-        format: "A4", margin: {
+        format: "A4",
+        margin: {
             top: "20mm",
             bottom: "20mm",
             left: "15mm",
             right: "15mm"
         }
-    })
+    });
 
-    await browser.close()
+    await browser.close();
 
-    return pdfBuffer
+    return pdfBuffer;
 }
 
 
-async function generateResumePdf({ resume, selfDescription, jobDescription }) {
+async function generateResumePdf({ userId, resume, selfDescription, jobDescription }) {
+  const user = await userModel.findById(userId);
+
+if (!user || !user.geminiApiKey) {
+    throw new Error("Gemini API Key not found");
+}
+
+const ai = new GoogleGenAI({
+    apiKey: user.geminiApiKey
+});
 
     const resumePdfSchema = z.object({
         html: z.string().describe("The HTML content of the resume which can be converted to PDF using any library like puppeteer")
@@ -156,7 +193,7 @@ async function generateResumePdf({ resume, selfDescription, jobDescription }) {
                     `
 
     const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemini-2.5-flash",
         contents: prompt,
         config: {
             responseMimeType: "application/json",

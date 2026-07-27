@@ -2,7 +2,7 @@ import {generateInterviewReport,getInterviewReportById,getAllInterviewReports,ge
 import {useContext,useEffect} from 'react'
 import { InterviewContext } from '../interview.context'
 import { useParams } from "react-router"
-
+import { toast } from "react-toastify";
 
 export const useInterview =()=>{
     const context = useContext(InterviewContext);
@@ -20,7 +20,7 @@ try {
      response = await generateInterviewReport({jobDescription,selfDescription,resumeFile});
     setReport(response.interviewReport)
 } catch (error) {
-    console.log(error)
+   toast.error(error.response.data.message);
 }finally{
     setloading(false)
 }

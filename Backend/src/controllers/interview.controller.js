@@ -8,6 +8,7 @@ const generateInterviewController =async (req,res)=>{
     const {selfDescription,jobDescription}= req.body
 
     const interviewReportByAi = await generateInterviewReport({
+         userId: req.user.id,
         resume:resumeContent.text,
         selfDescription,
         jobDescription
@@ -69,7 +70,7 @@ const generateResumePdfController =async(req,res)=>{
 
     const {resume,jobDescription,selfDescription} = interviewReport
 
-    const pdfBuffer = await generateResumePdf({resume,jobDescription,selfDescription})
+    const pdfBuffer = await generateResumePdf({ userId: req.user.id,resume,jobDescription,selfDescription})
 
     res.set({
         "Content-Type":"application/pdf",

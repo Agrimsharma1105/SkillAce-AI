@@ -5,6 +5,7 @@ dns.setServers(["1.1.1.1","8.8.8.8"])
 require("dotenv").config();
 const app = require('./src/app')
 const connectDB = require('./src/config/database')
+require("./src/config/redis");
 const resume = "I am a MERN developer";
 const selfDescription = "3rd year CSE student";
 const jobDescription = "Looking for React developer";
