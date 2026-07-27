@@ -1,5 +1,6 @@
 const dns = require('dns') 
 dns.setServers(["1.1.1.1","8.8.8.8"])
+const PORT = process.env.PORT || 3000;
 
 
 require("dotenv").config();
@@ -13,8 +14,8 @@ const jobDescription = "Looking for React developer";
 
 connectDB();
 
-app.listen(3000,()=>{
-    console.log("Server started at port 3000");
+app.listen(PORT,()=>{
+    console.log(`Server started at port ${PORT}`);
 })
 
 
